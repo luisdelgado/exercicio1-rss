@@ -1,11 +1,14 @@
 package br.ufpe.cin.if1001.rss;
 
 import android.app.Activity;
-import android.app.ListActivity;
+import android.content.Context;
+import android.database.DataSetObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.Adapter;
-import android.widget.ArrayAdapter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +38,7 @@ public class MainActivity extends Activity {
     //private TextView conteudoRSS;
     private ListView conteudoRSS;
     private List<ItemRSS> conteudoDois = new ArrayList<>();
-    ArrayAdapter<ItemRSS> adapter;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +52,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        this.context = this;
         new CarregaRSStask().execute(RSS_FEED);
-        adapter = new ArrayAdapter<ItemRSS>(this,
-                R.layout.itemlista, conteudoDois);
     }
 
     private class CarregaRSStask extends AsyncTask<String, Void, List<ItemRSS>> {
@@ -66,9 +68,7 @@ public class MainActivity extends Activity {
             try {
                 conteudo = getRssFeed(params[0]);
                 conteudoDois = ParserRSS.parse(conteudo);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (XmlPullParserException e) {
+            } catch (IOException | XmlPullParserException e) {
                 e.printStackTrace();
             }
             return conteudoDois;
@@ -80,7 +80,10 @@ public class MainActivity extends Activity {
 
             //ajuste para usar uma ListView
             //o layout XML a ser utilizado esta em res/layout/itemlista.xml
-            conteudoRSS.setAdapter(adapter);
+            ListAdapter adapter = new AdapterPersonalizado(s);
+            if (!adapter.isEmpty()) {
+                conteudoRSS.setAdapter(adapter);
+            }
         }
     }
 
@@ -105,5 +108,86 @@ public class MainActivity extends Activity {
             }
         }
         return rssFeed;
+    }
+
+    private class AdapterPersonalizado implements ListAdapter {
+        private List<ItemRSS> items;
+
+        public AdapterPersonalizado(List<ItemRSS> s) {
+            this.items = s;
+        }
+
+        @Override
+        public boolean areAllItemsEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean isEnabled(int i) {
+            return this.items.get(i) != null;
+        }
+
+        @Override
+        public void registerDataSetObserver(DataSetObserver dataSetObserver) {
+
+        }
+
+        @Override
+        public void unregisterDataSetObserver(DataSetObserver dataSetObserver) {
+
+        }
+
+        @Override
+        public int getCount() {
+            return this.items.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return this.items.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            if (view == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                view = inflater.inflate(R.layout.itemlista, viewGroup, false);
+                TextView titulo = (TextView) view.findViewById(R.id.item_titulo);
+                TextView data = (TextView) view.findViewById(R.id.item_data);
+                titulo.setText(conteudoDois.get(i).getTitle());
+                data.setText(conteudoDois.get(i).getPubDate());
+            } else {
+                TextView titulo = (TextView) view.findViewById(R.id.item_titulo);
+                TextView data = (TextView) view.findViewById(R.id.item_data);
+                titulo.setText(conteudoDois.get(i).getTitle());
+                data.setText(conteudoDois.get(i).getPubDate());
+            }
+            return view;
+        }
+
+        @Override
+        public int getItemViewType(int i) {
+            return i;
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return 1;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return this.getCount() <= 0;
+        }
     }
 }
