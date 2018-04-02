@@ -2,12 +2,17 @@ package br.ufpe.cin.if1001.rss;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.DataSetObserver;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,7 +31,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
-    private final String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
+    private String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
 
     //OUTROS LINKS PARA TESTAR...
     //http://rss.cnn.com/rss/edition.rss
@@ -39,6 +44,8 @@ public class MainActivity extends Activity {
     private ListView conteudoRSS;
     private List<ItemRSS> conteudoDois = new ArrayList<>();
     private Context context;
+    private ListAdapter adapter;
+    public final String rssfeed = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +59,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        RSS_FEED = prefs.getString(rssfeed, getString(R.string.rss_feed_default));
         this.context = this;
         new CarregaRSStask().execute(RSS_FEED);
+        conteudoRSS.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent= new Intent(Intent.ACTION_VIEW, Uri.parse(((ItemRSS) adapter.getItem(position)).getLink()));
+                startActivity(intent);
+            }
+        });
     }
 
     private class CarregaRSStask extends AsyncTask<String, Void, List<ItemRSS>> {
@@ -80,7 +97,7 @@ public class MainActivity extends Activity {
 
             //ajuste para usar uma ListView
             //o layout XML a ser utilizado esta em res/layout/itemlista.xml
-            ListAdapter adapter = new AdapterPersonalizado(s);
+            adapter = new AdapterPersonalizado(s);
             if (!adapter.isEmpty()) {
                 conteudoRSS.setAdapter(adapter);
             }
@@ -164,13 +181,13 @@ public class MainActivity extends Activity {
                 view = inflater.inflate(R.layout.itemlista, viewGroup, false);
                 TextView titulo = (TextView) view.findViewById(R.id.item_titulo);
                 TextView data = (TextView) view.findViewById(R.id.item_data);
-                titulo.setText(conteudoDois.get(i).getTitle());
-                data.setText(conteudoDois.get(i).getPubDate());
+                titulo.setText(this.items.get(i).getTitle());
+                data.setText(this.items.get(i).getPubDate());
             } else {
                 TextView titulo = (TextView) view.findViewById(R.id.item_titulo);
                 TextView data = (TextView) view.findViewById(R.id.item_data);
-                titulo.setText(conteudoDois.get(i).getTitle());
-                data.setText(conteudoDois.get(i).getPubDate());
+                titulo.setText(this.items.get(i).getTitle());
+                data.setText(this.items.get(i).getPubDate());
             }
             return view;
         }
