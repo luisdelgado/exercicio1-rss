@@ -42,6 +42,8 @@ public class MainActivity extends Activity {
     //use ListView ao invés de TextView - deixe o atributo com o mesmo nome
     //private TextView conteudoRSS;
     private ListView conteudoRSS;
+    
+    // Responsável por receber ParserRSS.parse
     private List<ItemRSS> conteudoDois = new ArrayList<>();
     private Context context;
     private ListAdapter adapter;
@@ -59,6 +61,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        
+        // SharedPreferences
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         RSS_FEED = prefs.getString(rssfeed, getString(R.string.rss_feed_default));
         this.context = this;
@@ -67,6 +71,8 @@ public class MainActivity extends Activity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                
+                // Para pegar o link foi necessário deserializar o item do adapter
                 Intent intent= new Intent(Intent.ACTION_VIEW, Uri.parse(((ItemRSS) adapter.getItem(position)).getLink()));
                 startActivity(intent);
             }
@@ -97,6 +103,7 @@ public class MainActivity extends Activity {
 
             //ajuste para usar uma ListView
             //o layout XML a ser utilizado esta em res/layout/itemlista.xml
+            // Adapter inicializado no onPostExecute para garantir que os dados parâmetros já tenham sido carregados
             adapter = new AdapterPersonalizado(s);
             if (!adapter.isEmpty()) {
                 conteudoRSS.setAdapter(adapter);
@@ -176,6 +183,8 @@ public class MainActivity extends Activity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
+            
+            // Configurando cada cédula de linha para ter seus títulos e datas respectivos
             if (view == null) {
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = inflater.inflate(R.layout.itemlista, viewGroup, false);
