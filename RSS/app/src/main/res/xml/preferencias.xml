@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory
+        android:title="dialog_based_preferences">
+
+        <EditTextPreference
+            android:key="rssfeed"
+            android:title="rssfeed"
+            android:summary="rssfeed"
+            android:dialogTitle="rssfeed" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

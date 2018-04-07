@@ -49,12 +49,12 @@ public class MainActivity extends Activity {
     private List<ItemRSS> conteudoDois = new ArrayList<>();
     private Context context;
     private ListAdapter adapter;
-    public final String rssfeed = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        loadPref();
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
@@ -63,10 +63,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        
-        // SharedPreferences
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        RSS_FEED = prefs.getString(rssfeed, getString(R.string.rss_feed_default));
         this.context = this;
         new CarregaRSStask().execute(RSS_FEED);
         conteudoRSS.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -221,22 +217,32 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
+        // Criando menu com opções
         getMenuInflater().inflate(R.menu.menu, menu);
         return super.onCreateOptionsMenu(menu);
-
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.opcoes:
-                Intent intent = new Intent(this, PreferenciasActivity.class);
-                this.startActivity(intent);
-                break;
-
-            default:
-                break;
-        }
+        Intent intent = new Intent(this, PreferenciasActivity.class);
+        startActivityForResult(intent, 0);
         return super.onOptionsItemSelected(item);
+    }
+
+    // Usado para quando as preferências forem atualizadas no dialogo, atualizar no layout
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        loadPref();
+    }
+
+    // SharedPreferences
+    public void loadPref(){
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        this.RSS_FEED = prefs.getString("rssfeed", getString(R.string.rss_feed_default));
+        if (this.RSS_FEED.equals("")) {
+            String rssfeed = getString(R.string.rss_feed_default);
+            this.RSS_FEED = rssfeed;
+        }
     }
 }
