@@ -10,6 +10,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -56,7 +58,7 @@ public class MainActivity extends Activity {
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
-    }
+}
 
     @Override
     protected void onStart() {
@@ -215,5 +217,26 @@ public class MainActivity extends Activity {
         public boolean isEmpty() {
             return this.getCount() <= 0;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.opcoes:
+                Intent intent = new Intent(this, PreferenciasActivity.class);
+                this.startActivity(intent);
+                break;
+
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
