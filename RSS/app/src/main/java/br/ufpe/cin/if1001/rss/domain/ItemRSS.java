@@ -1,4 +1,4 @@
-package br.ufpe.cin.if1001.rss;
+package br.ufpe.cin.if1001.rss.domain;
 
 public class ItemRSS {
     private final String title;
