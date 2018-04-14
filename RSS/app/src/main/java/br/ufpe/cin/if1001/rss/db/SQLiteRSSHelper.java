@@ -10,10 +10,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
 
 import static android.provider.BaseColumns._ID;
-import static android.provider.ContactsContract.CommonDataKinds.Organization.TITLE;
-import static android.provider.MediaStore.Images.ImageColumns.DESCRIPTION;
-import static android.provider.Telephony.ThreadsColumns.DATE;
-
 
 public class SQLiteRSSHelper extends SQLiteOpenHelper {
     //Nome do Banco de Dados
@@ -79,6 +75,7 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
         return insertItem(item.getTitle(),item.getPubDate(),item.getDescription(),item.getLink());
     }
     public long insertItem(String title, String pubDate, String description, String link) {
+        db.insertItem(title, pubDate, description, link);
         return (long)0.0;
     }
     public ItemRSS getItemRSS(String link) throws SQLException {
