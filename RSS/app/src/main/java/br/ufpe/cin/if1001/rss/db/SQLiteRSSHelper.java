@@ -75,14 +75,40 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
         return insertItem(item.getTitle(),item.getPubDate(),item.getDescription(),item.getLink());
     }
     public long insertItem(String title, String pubDate, String description, String link) {
-        db.insertItem(title, pubDate, description, link);
-        return (long)0.0;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues newValues = new ContentValues();
+        newValues.put(ITEM_TITLE, title);
+        newValues.put(ITEM_DATE, pubDate);
+        newValues.put(ITEM_DESC, description);
+        newValues.put(ITEM_LINK, link);
+        newValues.put(ITEM_UNREAD, "unread");
+        return db.insert(DATABASE_TABLE, null, newValues);
     }
     public ItemRSS getItemRSS(String link) throws SQLException {
-        return new ItemRSS("FALTA IMPLEMENTAR","FALTA IMPLEMENTAR","2018-04-09","FALTA IMPLEMENTAR");
+        SQLiteDatabase db = this.getWritableDatabase();
+        String search = "SELECT * FROM " + DATABASE_TABLE + " WHERE " +
+                ITEM_LINK + " = ?";
+        Cursor cursor = db.rawQuery(search, new String[] {link});
+        ItemRSS item = null;
+        if (cursor != null) {
+            if(cursor.moveToFirst()) {
+                String title = cursor.getString(1);
+                String finalLink = cursor.getColumnName(2);
+                String pubDate = cursor.getColumnName(3);
+                String description = cursor.getColumnName(4);
+                item = new ItemRSS(title,finalLink,pubDate,description);
+            }
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return item;
     }
     public Cursor getItems() throws SQLException {
-        return null;
+        SQLiteDatabase db = this.getWritableDatabase();
+        String search = "SELECT * FROM " + DATABASE_TABLE + " WHERE " +
+                ITEM_UNREAD + " = ?";
+        return db.rawQuery(search, new String[] {"unread"});
     }
     public boolean markAsUnread(String link) {
         return false;
