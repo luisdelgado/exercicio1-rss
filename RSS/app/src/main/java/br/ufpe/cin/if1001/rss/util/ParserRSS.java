@@ -1,4 +1,4 @@
-package br.ufpe.cin.if1001.rss;
+package br.ufpe.cin.if1001.rss.util;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import br.ufpe.cin.if1001.rss.domain.ItemRSS;
 
 public class ParserRSS {
 
