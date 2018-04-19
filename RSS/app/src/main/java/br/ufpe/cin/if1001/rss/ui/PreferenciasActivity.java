@@ -1,9 +1,11 @@
-package br.ufpe.cin.if1001.rss;
+package br.ufpe.cin.if1001.rss.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceFragment;
+
+import br.ufpe.cin.if1001.rss.R;
 
 public class PreferenciasActivity extends Activity {
 
