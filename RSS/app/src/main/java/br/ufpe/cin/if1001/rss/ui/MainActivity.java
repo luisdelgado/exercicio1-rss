@@ -74,6 +74,12 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
                 Cursor mCursor = ((Cursor) adapter.getItem(position));
+                if (mCursor != null) {
+                    if(mCursor.moveToFirst()) {
+                        String finalLink = mCursor.getColumnName(2);
+                        db.markAsRead(finalLink);
+                    }
+                }
             }
         });
     }
