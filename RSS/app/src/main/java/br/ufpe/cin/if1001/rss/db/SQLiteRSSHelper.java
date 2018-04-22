@@ -93,9 +93,9 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
         if (cursor != null) {
             if(cursor.moveToFirst()) {
                 String title = cursor.getString(1);
-                String finalLink = cursor.getColumnName(2);
-                String pubDate = cursor.getColumnName(3);
-                String description = cursor.getColumnName(4);
+                String pubDate = cursor.getString(2);
+                String description = cursor.getColumnName(3);
+                String finalLink = cursor.getString(4);
                 item = new ItemRSS(title,finalLink,pubDate,description);
             }
         }
@@ -115,7 +115,29 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
     }
 
     public boolean markAsRead(String link) {
-        return false;
+        boolean isRead = false;
+        SQLiteDatabase db = this.getWritableDatabase();
+        String search = "SELECT * FROM " + DATABASE_TABLE + " WHERE " +
+                ITEM_LINK + " = ?";
+        Cursor cursor = db.rawQuery(search, new String[] {link});
+        if (cursor != null) {
+            if(cursor.moveToFirst()) {
+                if (cursor.getString(5).equalsIgnoreCase("unread")) {
+                    String[] id = new String[] {cursor.getString(0)};
+                    ContentValues newValues = new ContentValues();
+                    newValues.put(ITEM_UNREAD, "read");
+                    String where = ITEM_ROWID + " = ?";
+                    int query = db.update(DATABASE_TABLE, newValues, where, id);
+                    if (query > 0) {
+                        isRead = true;
+                    }
+                }
+            }
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return isRead;
     }
 
 }

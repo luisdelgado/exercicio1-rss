@@ -76,8 +76,11 @@ public class MainActivity extends Activity {
                 Cursor mCursor = ((Cursor) adapter.getItem(position));
                 if (mCursor != null) {
                     if(mCursor.moveToFirst()) {
-                        String finalLink = mCursor.getColumnName(2);
-                        db.markAsRead(finalLink);
+                        String finalLink = mCursor.getString(4);
+                        if (db.markAsRead(finalLink)) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalLink));
+                            startActivity(intent);
+                        }
                     }
                 }
             }
