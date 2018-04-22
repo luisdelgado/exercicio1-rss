@@ -30,6 +30,7 @@ import java.util.List;
 import br.ufpe.cin.if1001.rss.R;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
+import br.ufpe.cin.if1001.rss.util.CarregaFeedService;
 import br.ufpe.cin.if1001.rss.util.ParserRSS;
 
 public class MainActivity extends Activity {
@@ -92,7 +93,10 @@ public class MainActivity extends Activity {
         super.onStart();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String linkfeed = preferences.getString("rssfeedlink", getResources().getString(R.string.rss_feed_default));
-        new CarregaRSS().execute(linkfeed);
+        //new CarregaRSS().execute(linkfeed);
+        Intent intent = new Intent(this, CarregaFeedService.class);
+        intent.putExtra("feeds", linkfeed);
+        startService(intent);
     }
 
     @Override

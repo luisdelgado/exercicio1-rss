@@ -16,6 +16,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.PreferenciasActivity"></activity>
+        <service android:name=".util.CarregaFeedService">
+            </service>
     </application>
 
 </manifest>
