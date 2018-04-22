@@ -123,6 +123,8 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
         if (cursor != null) {
             if(cursor.moveToFirst()) {
                 if (cursor.getString(5).equalsIgnoreCase("unread")) {
+
+                    // Atualizando banco de dados
                     String[] id = new String[] {cursor.getString(0)};
                     ContentValues newValues = new ContentValues();
                     newValues.put(ITEM_UNREAD, "read");
