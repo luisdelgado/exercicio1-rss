@@ -1,4 +1,4 @@
-package br.ufpe.cin.if1001.rss.util;
+package br.ufpe.cin.if1001.rss.broadcast;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

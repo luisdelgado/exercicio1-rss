@@ -27,37 +27,54 @@ public class CarregaFeedService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        int ciclo = 0;
+        while (true) {
+            boolean newItem = false;
 
-        // Passando feeds escolhido
-        if (intent != null && intent.getExtras() != null){
-            feeds = new String [] {intent.getStringExtra("feeds")};
-        }
-        boolean flag_problema = false;
-        List<ItemRSS> items = null;
-        try {
-            String feed = getRssFeed(feeds[0]);
-            items = ParserRSS.parse(feed);
-            for (ItemRSS i : items) {
-                Log.d("DB", "Buscando no Banco por link: " + i.getLink());
-                ItemRSS item = db.getItemRSS(i.getLink());
-                if (item == null) {
-                    Log.d("DB", "Encontrado pela primeira vez: " + i.getTitle());
-                    db.insertItem(i);
-                }
+            // Passando feeds escolhido
+            if (intent != null && intent.getExtras() != null) {
+                feeds = new String[]{intent.getStringExtra("feeds")};
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            flag_problema = true;
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-            flag_problema = true;
-        }
-        if (!flag_problema) {
-            Intent intentBroadcast = new Intent();
-            intentBroadcast.setAction("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
-            intentBroadcast.putExtra("feed_carregado","carregado");
-            sendBroadcast(intentBroadcast);
+            boolean flag_problema = false;
+            List<ItemRSS> items = null;
+            try {
+                String feed = getRssFeed(feeds[0]);
+                items = ParserRSS.parse(feed);
+                for (ItemRSS i : items) {
+                    Log.d("DB", "Buscando no Banco por link: " + i.getLink());
+                    ItemRSS item = db.getItemRSS(i.getLink());
+                    if (item == null) {
+                        Log.d("DB", "Encontrado pela primeira vez: " + i.getTitle());
+                        db.insertItem(i);
+                        newItem = true;
+                    }
+                }
+                if (ciclo != 0) {
+                    Thread.sleep(1800000);
+                } else {
+                    ciclo = 1;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                flag_problema = true;
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+                flag_problema = true;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                flag_problema = true;
+            }
+            if (!flag_problema) {
+                Intent intentBroadcast = new Intent();
+                intentBroadcast.setAction("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+                intentBroadcast.putExtra("feed_carregado", "carregado");
+                intentBroadcast.putExtra("novo_item", "false");
+                if (newItem) {
+                    intentBroadcast.putExtra("novo_item", "true");
+                    newItem = false;
+                }
+                sendBroadcast(intentBroadcast);
+            }
         }
     }
 
@@ -81,5 +98,10 @@ public class CarregaFeedService extends IntentService {
             }
         }
         return rssFeed;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i("EXIT", "ondestroy!");
     }
 }

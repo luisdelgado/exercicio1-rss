@@ -19,13 +19,15 @@ import android.widget.SimpleCursorAdapter;
 import br.ufpe.cin.if1001.rss.R;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.util.CarregaFeedService;
-import br.ufpe.cin.if1001.rss.util.FeedBroadcastReceiver;
+import br.ufpe.cin.if1001.rss.broadcast.FeedBroadcastReceiver;
 
 public class MainActivity extends Activity {
 
     private ListView conteudoRSS;
     private final String RSS_FEED = "http://rss.cnn.com/rss/edition.rss";
     private SQLiteRSSHelper db;
+    BroadcastReceiver feedBroadcastReceiver;
+    String linkfeed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,22 +37,19 @@ public class MainActivity extends Activity {
 
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
 
-        SimpleCursorAdapter adapter =
-                new SimpleCursorAdapter(
-                        //contexto, como estamos acostumados
-                        this,
-                        //Layout XML de como se parecem os itens da lista
-                        R.layout.itemlista,
-                        //Objeto do tipo Cursor, com os dados retornados do banco.
-                        //Como ainda não fizemos nenhuma consulta, está nulo.
-                        null,
-                        //Mapeamento das colunas nos IDs do XML.
-                        // Os dois arrays a seguir devem ter o mesmo tamanho
-                        new String[]{SQLiteRSSHelper.ITEM_TITLE, SQLiteRSSHelper.ITEM_DATE},
-                        new int[]{R.id.item_titulo, R.id.item_data},
-                        //Flags para determinar comportamento do adapter, pode deixar 0.
-                        0
-                );
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                //contexto, como estamos acostumados
+                this,
+                //Layout XML de como se parecem os itens da lista
+                R.layout.itemlista,
+                //Objeto do tipo Cursor, com os dados retornados do banco.
+                //Como ainda não fizemos nenhuma consulta, está nulo.
+                null,
+                //Mapeamento das colunas nos IDs do XML.
+                // Os dois arrays a seguir devem ter o mesmo tamanho
+                new String[]{SQLiteRSSHelper.ITEM_TITLE, SQLiteRSSHelper.ITEM_DATE}, new int[]{R.id.item_titulo, R.id.item_data},
+                //Flags para determinar comportamento do adapter, pode deixar 0.
+                0);
         //Seta o adapter. Como o Cursor é null, ainda não aparece nada na tela.
         conteudoRSS.setAdapter(adapter);
 
@@ -64,7 +63,7 @@ public class MainActivity extends Activity {
                 SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
                 Cursor mCursor = ((Cursor) adapter.getItem(position));
                 if (mCursor != null) {
-                    if(mCursor.moveToFirst()) {
+                    if (mCursor.moveToFirst()) {
                         String finalLink = mCursor.getString(4);
                         if (db.markAsRead(finalLink)) {
                             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalLink));
@@ -80,7 +79,7 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String linkfeed = preferences.getString("rssfeedlink", getResources().getString(R.string.rss_feed_default));
+        linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
 
         // Criando Service
         Intent intent = new Intent(this, CarregaFeedService.class);
@@ -88,7 +87,7 @@ public class MainActivity extends Activity {
         startService(intent);
 
         // Criando BroadcastReceiver
-        BroadcastReceiver feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
+        feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
         IntentFilter filter = new IntentFilter("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
         this.registerReceiver(feedBroadcastReceiver, filter);
     }
@@ -96,6 +95,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         db.close();
+        if (feedBroadcastReceiver!=null) {
+            unregisterReceiver(feedBroadcastReceiver);
+        }
         super.onDestroy();
     }
 
