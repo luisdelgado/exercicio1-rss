@@ -17,7 +17,6 @@ import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
 
 public class CarregaFeedService extends IntentService {
-
     String[] feeds;
     private SQLiteRSSHelper db;
 
@@ -28,6 +27,8 @@ public class CarregaFeedService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+
+        // Passando feeds escolhido
         if (intent != null && intent.getExtras() != null){
             feeds = new String [] {intent.getStringExtra("feeds")};
         }
@@ -51,6 +52,12 @@ public class CarregaFeedService extends IntentService {
         } catch (XmlPullParserException e) {
             e.printStackTrace();
             flag_problema = true;
+        }
+        if (!flag_problema) {
+            Intent intentBroadcast = new Intent();
+            intentBroadcast.setAction("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+            intentBroadcast.putExtra("feed_carregado","carregado");
+            sendBroadcast(intentBroadcast);
         }
     }
 

@@ -1,37 +1,25 @@
 package br.ufpe.cin.if1001.rss.ui;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
-
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
 
 import br.ufpe.cin.if1001.rss.R;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
-import br.ufpe.cin.if1001.rss.domain.ItemRSS;
 import br.ufpe.cin.if1001.rss.util.CarregaFeedService;
-import br.ufpe.cin.if1001.rss.util.ParserRSS;
+import br.ufpe.cin.if1001.rss.util.FeedBroadcastReceiver;
 
 public class MainActivity extends Activity {
 
@@ -93,10 +81,16 @@ public class MainActivity extends Activity {
         super.onStart();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String linkfeed = preferences.getString("rssfeedlink", getResources().getString(R.string.rss_feed_default));
-        //new CarregaRSS().execute(linkfeed);
+
+        // Criando Service
         Intent intent = new Intent(this, CarregaFeedService.class);
         intent.putExtra("feeds", linkfeed);
         startService(intent);
+
+        // Criando BroadcastReceiver
+        BroadcastReceiver feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
+        IntentFilter filter = new IntentFilter("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+        this.registerReceiver(feedBroadcastReceiver, filter);
     }
 
     @Override
@@ -119,83 +113,5 @@ public class MainActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    class CarregaRSS extends AsyncTask<String, Void, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(String... feeds) {
-            boolean flag_problema = false;
-            List<ItemRSS> items = null;
-            try {
-                String feed = getRssFeed(feeds[0]);
-                items = ParserRSS.parse(feed);
-                for (ItemRSS i : items) {
-                    Log.d("DB", "Buscando no Banco por link: " + i.getLink());
-                    ItemRSS item = db.getItemRSS(i.getLink());
-                    if (item == null) {
-                        Log.d("DB", "Encontrado pela primeira vez: " + i.getTitle());
-                        db.insertItem(i);
-                    }
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                flag_problema = true;
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-                flag_problema = true;
-            }
-            return flag_problema;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean teveProblema) {
-            if (teveProblema) {
-                Toast.makeText(MainActivity.this, "Houve algum problema ao carregar o feed.", Toast.LENGTH_SHORT).show();
-            } else {
-                //dispara o task que exibe a lista
-                new ExibirFeed().execute();
-            }
-        }
-    }
-
-    class ExibirFeed extends AsyncTask<Void, Void, Cursor> {
-
-        @Override
-        protected Cursor doInBackground(Void... voids) {
-            Cursor c = db.getItems();
-            c.getCount();
-            return c;
-        }
-
-        @Override
-        protected void onPostExecute(Cursor c) {
-            if (c != null) {
-                ((CursorAdapter) conteudoRSS.getAdapter()).changeCursor(c);
-            }
-        }
-    }
-
-    private String getRssFeed(String feed) throws IOException {
-        InputStream in = null;
-        String rssFeed = "";
-        try {
-            URL url = new URL(feed);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            in = conn.getInputStream();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            for (int count; (count = in.read(buffer)) != -1; ) {
-                out.write(buffer, 0, count);
-            }
-            byte[] response = out.toByteArray();
-            rssFeed = new String(response, "UTF-8");
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-        return rssFeed;
     }
 }
