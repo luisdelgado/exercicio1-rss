@@ -2,6 +2,8 @@ package br.ufpe.cin.if1001.rss.util;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -19,6 +21,7 @@ import br.ufpe.cin.if1001.rss.domain.ItemRSS;
 public class CarregaFeedService extends IntentService {
     String[] feeds;
     private SQLiteRSSHelper db;
+    SharedPreferences preferences;
 
     public CarregaFeedService() {
         super("name");
@@ -50,19 +53,21 @@ public class CarregaFeedService extends IntentService {
                     }
                 }
                 if (ciclo != 0) {
-                    Thread.sleep(1800000);
-                } else {
-                    ciclo = 1;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                flag_problema = true;
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-                flag_problema = true;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                flag_problema = true;
+                    preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    int timeNews = Integer.parseInt(preferences.getString("timeNews", "30"))*1000;
+                Thread.sleep(timeNews);
+            } else {
+                ciclo = 1;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            flag_problema = true;
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+            flag_problema = true;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            flag_problema = true;
             }
             if (!flag_problema) {
                 Intent intentBroadcast = new Intent();

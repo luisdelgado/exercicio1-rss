@@ -10,6 +10,11 @@
             android:summary="rssfeed"
             android:dialogTitle="rssfeed" />
 
+        <EditTextPreference
+            android:key="timeNews"
+            android:title="timeNews"
+            android:summary="timeNews"
+            android:dialogTitle="timeNews" />
     </PreferenceCategory>
 
 </PreferenceScreen>
