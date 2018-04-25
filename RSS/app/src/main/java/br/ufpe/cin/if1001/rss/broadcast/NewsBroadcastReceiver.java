@@ -19,7 +19,7 @@ public class NewsBroadcastReceiver extends BroadcastReceiver {
                     .setContentTitle("RSS_FEED")
                     .setContentText("RSS Feed tem uma nova notícia!")
                     .setPriority(Notification.PRIORITY_DEFAULT);
-            //Toast.makeText(context, "RSS Feed tem uma nova notícia!", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "RSS Feed tem uma nova notícia!", Toast.LENGTH_LONG).show();
         }
     }
 }
