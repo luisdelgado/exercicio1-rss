@@ -1,4 +1,23 @@
 <resources>
     <string name="app_name">RSS</string>
     <string name="rss_feed_default">http://leopoldomt.com/if1001/g1brasil.xml</string>
+    <string-array name="multisellistpref_defvalues">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="multisellistpref_entries">
+        <item>30 min</item>
+        <item>1h</item>
+        <item>3h</item>
+        <item>6h</item>
+        <item>12h</item>
+        <item>24h</item>
+    </string-array>
+    <string-array name="multisellistpref_entryValues">
+        <item>1</item>
+    </string-array>
 </resources>

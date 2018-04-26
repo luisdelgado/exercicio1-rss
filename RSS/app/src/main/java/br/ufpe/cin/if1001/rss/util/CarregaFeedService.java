@@ -54,8 +54,8 @@ public class CarregaFeedService extends IntentService {
                 }
                 if (ciclo != 0) {
                     preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                    int timeNews = Integer.parseInt(preferences.getString("timeNews", "30"))*1000;
-                Thread.sleep(timeNews);
+                    int timeNews = Integer.parseInt(preferences.getString("timeNews", "30"));
+                Thread.sleep(30000);
             } else {
                 ciclo = 1;
             }
