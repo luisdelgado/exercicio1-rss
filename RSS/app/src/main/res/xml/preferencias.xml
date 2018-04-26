@@ -10,6 +10,14 @@
             android:summary="rssfeed"
             android:dialogTitle="rssfeed" />
 
+        <MultiSelectListPreference
+            android:key="timeNews"
+            android:title="timeNews"
+            android:summary="timeNews"
+            android:dialogTitle="timeNews"
+            android:defaultValue="@array/multisellistpref_defvalues"
+            android:entries="@array/multisellistpref_entries"
+            android:entryValues="@array/multisellistpref_entryValues"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

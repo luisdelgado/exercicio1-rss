@@ -1,42 +1,33 @@
 package br.ufpe.cin.if1001.rss.ui;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
-
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
 
 import br.ufpe.cin.if1001.rss.R;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
-import br.ufpe.cin.if1001.rss.domain.ItemRSS;
-import br.ufpe.cin.if1001.rss.util.ParserRSS;
+import br.ufpe.cin.if1001.rss.util.CarregaFeedService;
+import br.ufpe.cin.if1001.rss.broadcast.FeedBroadcastReceiver;
 
 public class MainActivity extends Activity {
 
     private ListView conteudoRSS;
     private final String RSS_FEED = "http://rss.cnn.com/rss/edition.rss";
     private SQLiteRSSHelper db;
+    BroadcastReceiver feedBroadcastReceiver;
+    String linkfeed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,22 +37,19 @@ public class MainActivity extends Activity {
 
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
 
-        SimpleCursorAdapter adapter =
-                new SimpleCursorAdapter(
-                        //contexto, como estamos acostumados
-                        this,
-                        //Layout XML de como se parecem os itens da lista
-                        R.layout.itemlista,
-                        //Objeto do tipo Cursor, com os dados retornados do banco.
-                        //Como ainda não fizemos nenhuma consulta, está nulo.
-                        null,
-                        //Mapeamento das colunas nos IDs do XML.
-                        // Os dois arrays a seguir devem ter o mesmo tamanho
-                        new String[]{SQLiteRSSHelper.ITEM_TITLE, SQLiteRSSHelper.ITEM_DATE},
-                        new int[]{R.id.item_titulo, R.id.item_data},
-                        //Flags para determinar comportamento do adapter, pode deixar 0.
-                        0
-                );
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                //contexto, como estamos acostumados
+                this,
+                //Layout XML de como se parecem os itens da lista
+                R.layout.itemlista,
+                //Objeto do tipo Cursor, com os dados retornados do banco.
+                //Como ainda não fizemos nenhuma consulta, está nulo.
+                null,
+                //Mapeamento das colunas nos IDs do XML.
+                // Os dois arrays a seguir devem ter o mesmo tamanho
+                new String[]{SQLiteRSSHelper.ITEM_TITLE, SQLiteRSSHelper.ITEM_DATE}, new int[]{R.id.item_titulo, R.id.item_data},
+                //Flags para determinar comportamento do adapter, pode deixar 0.
+                0);
         //Seta o adapter. Como o Cursor é null, ainda não aparece nada na tela.
         conteudoRSS.setAdapter(adapter);
 
@@ -74,6 +62,15 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SimpleCursorAdapter adapter = (SimpleCursorAdapter) parent.getAdapter();
                 Cursor mCursor = ((Cursor) adapter.getItem(position));
+                if (mCursor != null) {
+                    if (mCursor.moveToFirst()) {
+                        String finalLink = mCursor.getString(4);
+                        if (db.markAsRead(finalLink)) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalLink));
+                            startActivity(intent);
+                        }
+                    }
+                }
             }
         });
     }
@@ -82,13 +79,42 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String linkfeed = preferences.getString("rssfeedlink", getResources().getString(R.string.rss_feed_default));
-        new CarregaRSS().execute(linkfeed);
+        linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
+
+        // Criando Service
+        Intent intent = new Intent(this, CarregaFeedService.class);
+        intent.putExtra("feeds", linkfeed);
+        startService(intent);
+
+        // Criando BroadcastReceiver
+        feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
+        IntentFilter filter = new IntentFilter("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+        this.registerReceiver(feedBroadcastReceiver, filter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
+
+        // Criando Service
+        Intent intent = new Intent(this, CarregaFeedService.class);
+        intent.putExtra("feeds", linkfeed);
+        startService(intent);
+
+        // Criando BroadcastReceiver
+        feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
+        IntentFilter filter = new IntentFilter("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+        this.registerReceiver(feedBroadcastReceiver, filter);
     }
 
     @Override
     protected void onDestroy() {
         db.close();
+        if (feedBroadcastReceiver!=null) {
+            unregisterReceiver(feedBroadcastReceiver);
+        }
         super.onDestroy();
     }
 
@@ -106,83 +132,5 @@ public class MainActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    class CarregaRSS extends AsyncTask<String, Void, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(String... feeds) {
-            boolean flag_problema = false;
-            List<ItemRSS> items = null;
-            try {
-                String feed = getRssFeed(feeds[0]);
-                items = ParserRSS.parse(feed);
-                for (ItemRSS i : items) {
-                    Log.d("DB", "Buscando no Banco por link: " + i.getLink());
-                    ItemRSS item = db.getItemRSS(i.getLink());
-                    if (item == null) {
-                        Log.d("DB", "Encontrado pela primeira vez: " + i.getTitle());
-                        db.insertItem(i);
-                    }
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                flag_problema = true;
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-                flag_problema = true;
-            }
-            return flag_problema;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean teveProblema) {
-            if (teveProblema) {
-                Toast.makeText(MainActivity.this, "Houve algum problema ao carregar o feed.", Toast.LENGTH_SHORT).show();
-            } else {
-                //dispara o task que exibe a lista
-                new ExibirFeed().execute();
-            }
-        }
-    }
-
-    class ExibirFeed extends AsyncTask<Void, Void, Cursor> {
-
-        @Override
-        protected Cursor doInBackground(Void... voids) {
-            Cursor c = db.getItems();
-            c.getCount();
-            return c;
-        }
-
-        @Override
-        protected void onPostExecute(Cursor c) {
-            if (c != null) {
-                ((CursorAdapter) conteudoRSS.getAdapter()).changeCursor(c);
-            }
-        }
-    }
-
-    private String getRssFeed(String feed) throws IOException {
-        InputStream in = null;
-        String rssFeed = "";
-        try {
-            URL url = new URL(feed);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            in = conn.getInputStream();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            for (int count; (count = in.read(buffer)) != -1; ) {
-                out.write(buffer, 0, count);
-            }
-            byte[] response = out.toByteArray();
-            rssFeed = new String(response, "UTF-8");
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-        return rssFeed;
     }
 }
