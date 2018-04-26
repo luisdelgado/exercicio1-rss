@@ -93,6 +93,23 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
+
+        // Criando Service
+        Intent intent = new Intent(this, CarregaFeedService.class);
+        intent.putExtra("feeds", linkfeed);
+        startService(intent);
+
+        // Criando BroadcastReceiver
+        feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
+        IntentFilter filter = new IntentFilter("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+        this.registerReceiver(feedBroadcastReceiver, filter);
+    }
+
+    @Override
     protected void onDestroy() {
         db.close();
         if (feedBroadcastReceiver!=null) {
