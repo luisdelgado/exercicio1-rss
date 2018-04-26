@@ -16,6 +16,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.PreferenciasActivity"></activity>
+        <service android:name=".util.CarregaFeedService">
+            </service>
+        <receiver android:name=".broadcast.NewsBroadcastReceiver"  android:exported="true">
+            <intent-filter>
+                <action android:name="br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
