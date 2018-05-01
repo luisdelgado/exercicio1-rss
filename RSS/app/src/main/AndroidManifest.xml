@@ -34,7 +34,7 @@
             android:authorities="br.ufpe.cin.if1001.rss.db.RssProvider"
             android:exported="true"
             android:syncable="true"
-            android:readPermission="exercicio1-rss"/>
+            android:readPermission="br.ufpe.cin.if1001.rss.leitura"/>
     </application>
 
 </manifest>
