@@ -28,6 +28,7 @@ public class MainActivity extends Activity {
     private SQLiteRSSHelper db;
     BroadcastReceiver feedBroadcastReceiver;
     String linkfeed;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +83,7 @@ public class MainActivity extends Activity {
         linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
 
         // Criando Service
-        Intent intent = new Intent(this, CarregaFeedService.class);
+        intent = new Intent(this, CarregaFeedService.class);
         intent.putExtra("feeds", linkfeed);
         startService(intent);
 
@@ -99,9 +100,9 @@ public class MainActivity extends Activity {
         linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
 
         // Criando Service
-        Intent intent = new Intent(this, CarregaFeedService.class);
-        intent.putExtra("feeds", linkfeed);
-        startService(intent);
+        //intent = new Intent(this, CarregaFeedService.class);
+        //intent.putExtra("feeds", linkfeed);
+        //startService(intent);
 
         // Criando BroadcastReceiver
         feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);

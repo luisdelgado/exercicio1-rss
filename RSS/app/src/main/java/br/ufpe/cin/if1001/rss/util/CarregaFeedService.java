@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import br.ufpe.cin.if1001.rss.R;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
 
@@ -36,7 +37,8 @@ public class CarregaFeedService extends IntentService {
 
             // Passando feeds escolhido
             if (intent != null && intent.getExtras() != null) {
-                feeds = new String[]{intent.getStringExtra("feeds")};
+                this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                feeds = new String[]{this.preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default))};
             }
             boolean flag_problema = false;
             List<ItemRSS> items = null;
@@ -53,7 +55,6 @@ public class CarregaFeedService extends IntentService {
                     }
                 }
                 if (ciclo != 0) {
-                    preferences = PreferenceManager.getDefaultSharedPreferences(this);
                 Thread.sleep(30000);
             } else {
                 ciclo = 1;
