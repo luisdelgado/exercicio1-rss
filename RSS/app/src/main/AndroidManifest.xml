@@ -17,7 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.PreferenciasActivity"></activity>
-        <service android:name=".util.CarregaFeedService">
+        <service android:name=".service.CarregaFeedService">
             </service>
         <receiver android:name=".broadcast.NewsBroadcastReceiver"  android:exported="true">
             <intent-filter>
@@ -25,10 +25,15 @@
             </intent-filter>
         </receiver>
         <service
-            android:name=".broadcast.MyJobService"
+            android:name=".service.MyJobService"
             android:label="Word service"
             android:permission="android.permission.BIND_JOB_SERVICE" >
         </service>
+        <provider
+            android:name="br.ufpe.cin.if1001.rss.db.RssProvider"
+            android:authorities="br.ufpe.cin.if1001.rss.db"
+            android:exported="false"
+            android:syncable="true"/>
     </application>
 
 </manifest>

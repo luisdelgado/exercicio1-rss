@@ -27,9 +27,9 @@ import android.widget.Toast;
 import java.util.Set;
 
 import br.ufpe.cin.if1001.rss.R;
-import br.ufpe.cin.if1001.rss.broadcast.MyJobService;
+import br.ufpe.cin.if1001.rss.service.MyJobService;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
-import br.ufpe.cin.if1001.rss.util.CarregaFeedService;
+import br.ufpe.cin.if1001.rss.service.CarregaFeedService;
 import br.ufpe.cin.if1001.rss.broadcast.FeedBroadcastReceiver;
 
 public class MainActivity extends Activity {
@@ -144,6 +144,7 @@ public class MainActivity extends Activity {
 
     public static void scheduleJob(Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String linkfeed = preferences.getString("rssfeed", context.getResources().getString(R.string.rss_feed_default));
         Set<String> selections = preferences.getStringSet("timeNews", null);
         String[] selected = selections.toArray(new String[]{});
         ComponentName serviceComponent = new ComponentName(context, MyJobService.class);

@@ -1,4 +1,4 @@
-package br.ufpe.cin.if1001.rss.util;
+package br.ufpe.cin.if1001.rss.service;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -18,6 +18,7 @@ import java.util.List;
 import br.ufpe.cin.if1001.rss.R;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
+import br.ufpe.cin.if1001.rss.util.ParserRSS;
 
 public class CarregaFeedService extends IntentService {
     String[] feeds;
@@ -53,10 +54,7 @@ public class CarregaFeedService extends IntentService {
                     newItem = true;
                 }
             }
-        } catch (IOException e) {
-        e.printStackTrace();
-        flag_problema = true;
-        } catch (XmlPullParserException e) {
+        } catch (IOException | XmlPullParserException e) {
             e.printStackTrace();
             flag_problema = true;
         }
@@ -67,7 +65,6 @@ public class CarregaFeedService extends IntentService {
             intentBroadcast.putExtra("novo_item", "false");
             if (newItem) {
                 intentBroadcast.putExtra("novo_item", "true");
-                newItem = false;
             }
             sendBroadcast(intentBroadcast);
         }
