@@ -31,56 +31,47 @@ public class CarregaFeedService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        int ciclo = 0;
-        while (true) {
-            boolean newItem = false;
 
-            // Passando feeds escolhido
-            if (intent != null && intent.getExtras() != null) {
-                this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                feeds = new String[]{this.preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default))};
-            }
-            boolean flag_problema = false;
-            List<ItemRSS> items = null;
-            try {
-                String feed = getRssFeed(feeds[0]);
-                items = ParserRSS.parse(feed);
-                for (ItemRSS i : items) {
-                    Log.d("DB", "Buscando no Banco por link: " + i.getLink());
-                    ItemRSS item = db.getItemRSS(i.getLink());
-                    if (item == null) {
-                        Log.d("DB", "Encontrado pela primeira vez: " + i.getTitle());
-                        db.insertItem(i);
-                        newItem = true;
-                    }
+        boolean newItem = false;
+
+        // Passando feeds escolhido
+        if (intent != null && intent.getExtras() != null) {
+            this.preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            feeds = new String[]{this.preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default))};
+        }
+        boolean flag_problema = false;
+        List<ItemRSS> items = null;
+        try {
+            String feed = getRssFeed(feeds[0]);
+            items = ParserRSS.parse(feed);
+            for (ItemRSS i : items) {
+                Log.d("DB", "Buscando no Banco por link: " + i.getLink());
+                ItemRSS item = db.getItemRSS(i.getLink());
+                if (item == null) {
+                    Log.d("DB", "Encontrado pela primeira vez: " + i.getTitle());
+                    db.insertItem(i);
+                    newItem = true;
                 }
-                if (ciclo != 0) {
-                Thread.sleep(30000);
-            } else {
-                ciclo = 1;
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            flag_problema = true;
+        e.printStackTrace();
+        flag_problema = true;
         } catch (XmlPullParserException e) {
             e.printStackTrace();
             flag_problema = true;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            flag_problema = true;
-            }
-            if (!flag_problema) {
-                Intent intentBroadcast = new Intent();
-                intentBroadcast.setAction("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
-                intentBroadcast.putExtra("feed_carregado", "carregado");
-                intentBroadcast.putExtra("novo_item", "false");
-                if (newItem) {
-                    intentBroadcast.putExtra("novo_item", "true");
-                    newItem = false;
-                }
-                sendBroadcast(intentBroadcast);
-            }
         }
+        if (!flag_problema) {
+            Intent intentBroadcast = new Intent();
+            intentBroadcast.setAction("br.ufpe.cin.uf1001.rss.broadcast.FEED_CARREGADO");
+            intentBroadcast.putExtra("feed_carregado", "carregado");
+            intentBroadcast.putExtra("novo_item", "false");
+            if (newItem) {
+                intentBroadcast.putExtra("novo_item", "true");
+                newItem = false;
+            }
+            sendBroadcast(intentBroadcast);
+        }
+
     }
 
     private String getRssFeed(String feed) throws IOException {
