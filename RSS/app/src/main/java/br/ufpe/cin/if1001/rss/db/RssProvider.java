@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
-import static br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper.DATABASE_TABLE;
 import static br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper.ITEM_LINK;
 
 public class RssProvider extends ContentProvider {
@@ -22,8 +21,7 @@ public class RssProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         // Implement this to handle requests to delete one or more rows.
         SQLiteDatabase db = this.db.getWritableDatabase();
-        db.delete(DATABASE_TABLE, selection, selectionArgs);
-        return db.delete(DATABASE_TABLE, selection, selectionArgs);
+        return db.delete(getTableName(uri), selection, selectionArgs);
     }
 
     @Override
@@ -32,7 +30,7 @@ public class RssProvider extends ContentProvider {
         // at the given URI.
         String type = "";
         SQLiteDatabase db = this.db.getWritableDatabase();
-        String search = "SELECT * FROM " + DATABASE_TABLE + " WHERE " +
+        String search = "SELECT * FROM " + getTableName(uri) + " WHERE " +
                 ITEM_LINK + " = ?";
         Cursor cursor = db.rawQuery(search, new String[] {String.valueOf(uri)});
         if (cursor != null) {
@@ -47,7 +45,7 @@ public class RssProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = this.db.getWritableDatabase();
-        if (db.insert(DATABASE_TABLE, null, values) == -1) uri = null;
+        if (db.insert(getTableName(uri), null, values) == -1) uri = null;
         return uri;
     }
 
@@ -64,13 +62,19 @@ public class RssProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         SQLiteDatabase db = this.db.getWritableDatabase();
-        return db.query(DATABASE_TABLE, projection, selection, selectionArgs, null, null, sortOrder);
+        return db.query(getTableName(uri), projection, selection, selectionArgs, null, null, sortOrder);
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
         SQLiteDatabase db = this.db.getWritableDatabase();
-        return db.update(DATABASE_TABLE, values, selection, selectionArgs);
+        return db.update(getTableName(uri), values, selection, selectionArgs);
+    }
+
+    public static String getTableName(Uri uri){
+        String value = uri.getPath();
+        value = value.replace("/", "");//we need to remove '/'
+        return value;
     }
 }

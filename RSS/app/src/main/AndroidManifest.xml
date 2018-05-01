@@ -31,9 +31,10 @@
         </service>
         <provider
             android:name="br.ufpe.cin.if1001.rss.db.RssProvider"
-            android:authorities="br.ufpe.cin.if1001.rss.db"
-            android:exported="false"
-            android:syncable="true"/>
+            android:authorities="br.ufpe.cin.if1001.rss.db.RssProvider"
+            android:exported="true"
+            android:syncable="true"
+            android:readPermission="exercicio1-rss"/>
     </application>
 
 </manifest>
