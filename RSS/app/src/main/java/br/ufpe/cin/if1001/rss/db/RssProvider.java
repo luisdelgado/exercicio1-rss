@@ -11,6 +11,8 @@ import static br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper.ITEM_LINK;
 
 public class RssProvider extends ContentProvider {
 
+    public static final String AUTHORITY = "br.ufpe.cin.if1001.rss.db.RssProvider";//specific for our our app, will be specified in maninfed
+    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
     private SQLiteRSSHelper db;
     Context c;
 
@@ -45,8 +47,8 @@ public class RssProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase db = this.db.getWritableDatabase();
-        if (db.insert(getTableName(uri), null, values) == -1) uri = null;
-        return uri;
+        long value = db.insert(getTableName(uri), null, values);
+        return Uri.withAppendedPath(CONTENT_URI, String.valueOf(value));
     }
 
     @Override
