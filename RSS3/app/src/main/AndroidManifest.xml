@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="br.ufpe.cin.if1001.rss3">
-    <uses-permission android:name="br.ufpe.cin.if1001.rss.leitura"/>
+    <uses-permission android:name="br.ufpe.cin.if1001.rss.leitura.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"

@@ -3,6 +3,8 @@
     package="br.ufpe.cin.if1001.rss">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <permission android:name="br.ufpe.cin.if1001.rss.leitura.READ_EXTERNAL_STORAGE"/>
+    
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -32,9 +34,10 @@
         <provider
             android:name="br.ufpe.cin.if1001.rss.db.RssProvider"
             android:authorities="br.ufpe.cin.if1001.rss.db.RssProvider"
+            android:enabled="true"
             android:exported="true"
-            android:syncable="true"
-            android:readPermission="br.ufpe.cin.if1001.rss.leitura"/>
+            android:multiprocess="true"
+            android:readPermission="br.ufpe.cin.if1001.rss.leitura.READ_EXTERNAL_STORAGE"/>
     </application>
 
 </manifest>

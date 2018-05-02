@@ -118,6 +118,14 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        if (feedBroadcastReceiver!=null) {
+            unregisterReceiver(feedBroadcastReceiver);
+        }
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         db.close();
         if (feedBroadcastReceiver!=null) {

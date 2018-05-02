@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 import static br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper.ITEM_LINK;
+import static br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper.DATABASE_TABLE;
 
 public class RssProvider extends ContentProvider {
 
@@ -75,8 +76,6 @@ public class RssProvider extends ContentProvider {
     }
 
     public static String getTableName(Uri uri){
-        String value = uri.getPath();
-        value = value.replace("/", "");//we need to remove '/'
-        return value;
+        return DATABASE_TABLE;
     }
 }

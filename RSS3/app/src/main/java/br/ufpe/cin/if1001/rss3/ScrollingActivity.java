@@ -1,9 +1,13 @@
 package br.ufpe.cin.if1001.rss3;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,9 +19,25 @@ import android.support.v7.widget.Toolbar;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.provider.BaseColumns._ID;
+
 public class ScrollingActivity extends AppCompatActivity {
 
     private ListView conteudoRSS;
+
+    // Colunas da tabela
+    //Definindo constantes que representam os campos do banco de dados
+    public static final String ITEM_ROWID = _ID;
+    public static final String ITEM_TITLE = "title";
+    public static final String ITEM_DATE = "pubDate";
+    public static final String ITEM_DESC = "description";
+    public static final String ITEM_LINK = "link";
+    public static final String ITEM_UNREAD = "unread";
+    public final static String[] columns = { ITEM_ROWID, ITEM_TITLE, ITEM_DATE, ITEM_DESC, ITEM_LINK, ITEM_UNREAD};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,10 +46,32 @@ public class ScrollingActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Permissões
+        String provider = "br.ufpe.cin.if1001.rss.db.RssProvider";
         Uri kUri = Uri.parse("content://br.ufpe.cin.if1001.rss.db.RssProvider");
+        grantUriPermission(provider, kUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        grantUriPermission(provider, kUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        grantUriPermission(provider, kUri, Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         checkPermissionREAD_EXTERNAL_STORAGE(this);
-        String teste = kUri.getQuery();
-        // Cursor c = managedQuery(kUri, null, null, null, null);
+        List<String> permissions = this.getGrantedPermissions("br.ufpe.cin.if1001.rss3");
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            String selection = ITEM_LINK + " = ?";
+            String [] selectionArgs = new String[] {"https://brasil.elpais.com/brasil/2018/04/27/tecnologia/1524832183_460349.html#?ref=rss&format=simple&link=link"};
+            String sortOrder = "pubDate DESC";
+            Cursor c = getContentResolver().query(kUri, columns, selection, selectionArgs, sortOrder, null);
+            if (c != null) {
+                if(c.moveToFirst()) {
+                    String title = c.getString(1);
+                    String pubDate = c.getString(2);
+                    String description = c.getColumnName(3);
+                    String finalLink = c.getString(4);
+                }
+            }
+            if (c != null) {
+                c.close();
+            }
+        }
 
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
 
@@ -60,8 +102,7 @@ public class ScrollingActivity extends AppCompatActivity {
             final Context context) {
         int currentAPIVersion = Build.VERSION.SDK_INT;
         if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
-            showDialog("External storage", context,
-                    "br.ufpe.cin.if1001.rss.leitura");
+            showDialog("External storage", context, Manifest.permission.READ_EXTERNAL_STORAGE);
         }
         return true;
     }
@@ -89,7 +130,7 @@ public class ScrollingActivity extends AppCompatActivity {
                                            String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
-                if (grantResults[0] == PackageManager.GET_URI_PERMISSION_PATTERNS) {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // do your stuff
                 } else {
                     Toast.makeText(this, "GET_ACCOUNTS Denied",
@@ -100,5 +141,21 @@ public class ScrollingActivity extends AppCompatActivity {
                 super.onRequestPermissionsResult(requestCode, permissions,
                         grantResults);
         }
+    }
+
+    List<String> getGrantedPermissions(final String appPackage) {
+        List<String> granted = new ArrayList<String>();
+        try {
+            PackageInfo pi = getPackageManager().getPackageInfo(appPackage, PackageManager.GET_PERMISSIONS);
+            for (int i = 0; i < pi.requestedPermissions.length; i++) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    if ((pi.requestedPermissionsFlags[i] & PackageInfo.REQUESTED_PERMISSION_GRANTED) != 0) {
+                        granted.add(pi.requestedPermissions[i]);
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return granted;
     }
 }
