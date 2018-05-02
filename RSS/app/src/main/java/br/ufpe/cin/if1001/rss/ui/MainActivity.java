@@ -109,7 +109,7 @@ public class MainActivity extends Activity {
         super.onResume();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         linkfeed = preferences.getString("rssfeed", getResources().getString(R.string.rss_feed_default));
-        this.scheduleJob(this);
+        scheduleJob(this);
 
         // Criando BroadcastReceiver
         feedBroadcastReceiver = new FeedBroadcastReceiver(conteudoRSS);
@@ -128,9 +128,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         db.close();
-        if (feedBroadcastReceiver!=null) {
-            unregisterReceiver(feedBroadcastReceiver);
-        }
         super.onDestroy();
     }
 
