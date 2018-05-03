@@ -22,7 +22,7 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
     //alternativa
     Context c;
 
-    private SQLiteRSSHelper(Context context) {
+    SQLiteRSSHelper(Context context) {
         super(context, DATABASE_NAME, null, DB_VERSION);
         c = context;
     }
