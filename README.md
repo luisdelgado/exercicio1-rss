@@ -23,10 +23,10 @@ Para entregar o exercício, responda o [formulário de entrega](https://docs.goo
 
 | Passo | Completou? |
 | ------ | ------ |
-| 18 | **não** |
-| 19 | **não** |
-| 20 | **não** |
-| 21 | **não** |
+| 18 | **sim** |
+| 19 | **sim** |
+| 20 | **sim** |
+| 21 | **sim** |
 
 # Tarefa #2 - RSS 
 
